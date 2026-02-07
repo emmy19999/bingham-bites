@@ -1,0 +1,79 @@
+import React from 'react';
+import { Star, Clock, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import type { Cafeteria } from '@/data/cafeterias';
+
+interface CafeteriaCardProps {
+  cafeteria: Cafeteria;
+  index: number;
+}
+
+const CafeteriaCard = ({ cafeteria, index }: CafeteriaCardProps) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.08 }}
+    >
+      <Link to={`/cafeteria/${cafeteria.id}`} className="block group">
+        <div className="glass-card overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+          {/* Image / Emoji Hero */}
+          <div className="relative h-40 bg-gradient-to-br from-primary/10 to-accent flex items-center justify-center overflow-hidden">
+            <span className="text-6xl group-hover:scale-110 transition-transform duration-300">
+              {cafeteria.emoji}
+            </span>
+            {/* Status badge */}
+            <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold ${
+              cafeteria.isOpen
+                ? 'bg-success/90 text-success-foreground'
+                : 'bg-destructive/90 text-destructive-foreground'
+            }`}>
+              {cafeteria.isOpen ? 'Open' : 'Closed'}
+            </div>
+            {/* Price range */}
+            <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-card/80 backdrop-blur-sm text-xs font-medium">
+              {cafeteria.priceRange}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-4 space-y-2">
+            <div className="flex items-start justify-between">
+              <h3 className="font-display font-semibold text-lg group-hover:text-primary transition-colors">
+                {cafeteria.name}
+              </h3>
+              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" />
+            </div>
+
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {cafeteria.description}
+            </p>
+
+            <div className="flex items-center gap-4 pt-1">
+              <div className="flex items-center gap-1">
+                <Star className="w-4 h-4 text-warning fill-warning" />
+                <span className="text-sm font-semibold">{cafeteria.rating}</span>
+                <span className="text-xs text-muted-foreground">({cafeteria.reviewCount})</span>
+              </div>
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Clock className="w-3.5 h-3.5" />
+                <span className="text-xs">{cafeteria.deliveryTime}</span>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-1">
+              {cafeteria.tags.map(tag => (
+                <span key={tag} className="px-2 py-0.5 rounded-md bg-muted/60 text-xs text-muted-foreground">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+};
+
+export default CafeteriaCard;
