@@ -12,7 +12,7 @@ const Cart = () => {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col pb-16 md:pb-0">
         <Header />
         <PageTransition>
           <div className="flex-1 flex items-center justify-center">
@@ -40,7 +40,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pb-16 md:pb-0">
       <Header />
       <PageTransition>
         <main className="flex-1 animated-gradient-bg">
@@ -77,11 +77,9 @@ const Cart = () => {
                     className="glass-card p-4"
                   >
                     <div className="flex gap-4">
-                      <img
-                        src={item.menuItem.image}
-                        alt={item.menuItem.name}
-                        className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
-                      />
+                      <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary/10 to-accent flex items-center justify-center flex-shrink-0">
+                        <span className="text-2xl">🍽️</span>
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start">
                           <div>

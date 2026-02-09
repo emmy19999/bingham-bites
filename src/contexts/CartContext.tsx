@@ -1,8 +1,16 @@
 import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import type { MenuItem } from '@/data/cafeterias';
+
+export interface CartMenuItem {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  preparation_time: number | null;
+}
 
 export interface CartItem {
-  menuItem: MenuItem;
+  menuItem: CartMenuItem;
   quantity: number;
   specialInstructions?: string;
   cafeteriaId: string;
@@ -11,7 +19,7 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (item: MenuItem, cafeteriaId: string, cafeteriaName: string) => void;
+  addItem: (item: CartMenuItem, cafeteriaId: string, cafeteriaName: string) => void;
   removeItem: (menuItemId: string) => void;
   updateQuantity: (menuItemId: string, quantity: number) => void;
   updateInstructions: (menuItemId: string, instructions: string) => void;
@@ -27,7 +35,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [justAdded, setJustAdded] = useState<string | null>(null);
 
-  const addItem = useCallback((menuItem: MenuItem, cafeteriaId: string, cafeteriaName: string) => {
+  const addItem = useCallback((menuItem: CartMenuItem, cafeteriaId: string, cafeteriaName: string) => {
     setItems(prev => {
       const existing = prev.find(i => i.menuItem.id === menuItem.id);
       if (existing) {

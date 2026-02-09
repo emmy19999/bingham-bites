@@ -6,15 +6,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { PageTransition } from '@/components/ui/Skeletons';
-import { Package, ArrowLeft, Clock } from 'lucide-react';
+import { Package, Clock, Loader2 } from 'lucide-react';
 
 const Orders = () => {
-  const { orders } = useOrders();
+  const { orders, isLoading } = useOrders();
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col pb-16 md:pb-0">
         <Header />
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="text-center">
@@ -28,19 +28,19 @@ const Orders = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pb-16 md:pb-0">
       <Header />
       <PageTransition>
         <main className="flex-1 animated-gradient-bg">
           <div className="container mx-auto px-4 py-6 max-w-2xl">
             <h1 className="font-display text-2xl font-bold mb-6">Your Orders</h1>
 
-            {orders.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
+            {isLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : orders.length === 0 ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
                 <div className="w-20 h-20 rounded-3xl bg-muted/50 flex items-center justify-center mx-auto mb-5">
                   <Package className="w-10 h-10 text-muted-foreground" />
                 </div>
@@ -64,7 +64,7 @@ const Orders = () => {
                       className="glass-card p-5 block hover:shadow-card-hover transition-all"
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <span className="font-display font-semibold">{order.id}</span>
+                        <span className="font-display font-semibold text-sm">{order.id.slice(0, 12)}...</span>
                         <div className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
                           order.status === 'delivered'
                             ? 'bg-success/10 text-success'

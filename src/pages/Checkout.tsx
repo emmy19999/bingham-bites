@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, MapPin, CreditCard, Building, Banknote, Check, Loader2, ChevronDown } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useOrders } from '@/contexts/OrderContext';
-import { hostels } from '@/data/hostels';
+import { useHostels } from '@/hooks/use-cafeterias';
 import Header from '@/components/layout/Header';
 import { PageTransition } from '@/components/ui/Skeletons';
 import { toast } from 'sonner';
@@ -12,15 +12,16 @@ import { toast } from 'sonner';
 const Checkout = () => {
   const { items, subtotal, clearCart } = useCart();
   const { placeOrder } = useOrders();
+  const { data: hostels = [] } = useHostels();
   const navigate = useNavigate();
-  const [selectedHostel, setSelectedHostel] = useState('');
+  const [selectedHostelId, setSelectedHostelId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [processing, setProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [hostelOpen, setHostelOpen] = useState(false);
 
-  const hostel = hostels.find(h => h.id === selectedHostel);
-  const deliveryFee = hostel?.deliveryFee || 0;
+  const hostel = hostels.find(h => h.id === selectedHostelId);
+  const deliveryFee = hostel?.delivery_fee || 0;
   const total = subtotal + deliveryFee;
 
   const paymentMethods = [
@@ -30,21 +31,25 @@ const Checkout = () => {
   ];
 
   const handlePlaceOrder = async () => {
-    if (!selectedHostel) { toast.error('Please select your hostel'); return; }
+    if (!selectedHostelId) { toast.error('Please select your hostel'); return; }
     if (!paymentMethod) { toast.error('Please select a payment method'); return; }
 
     setProcessing(true);
-    // Simulate payment processing
-    await new Promise(r => setTimeout(r, 2000));
-    setProcessing(false);
-    setShowSuccess(true);
+    await new Promise(r => setTimeout(r, 1500));
 
-    const order = placeOrder(items, subtotal, deliveryFee, hostel!.name, paymentMethod);
+    const order = await placeOrder(items, subtotal, deliveryFee, hostel!.name, paymentMethod);
 
-    setTimeout(() => {
-      clearCart();
-      navigate(`/tracking/${order.id}`);
-    }, 2500);
+    if (order) {
+      setProcessing(false);
+      setShowSuccess(true);
+      setTimeout(() => {
+        clearCart();
+        navigate(`/tracking/${order.id}`);
+      }, 2500);
+    } else {
+      setProcessing(false);
+      toast.error('Failed to place order. Please try again.');
+    }
   };
 
   if (items.length === 0 && !showSuccess) {
@@ -53,12 +58,11 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pb-16 md:pb-0">
       <Header />
       <PageTransition>
         <main className="flex-1 animated-gradient-bg">
           <div className="container mx-auto px-4 py-6 max-w-2xl">
-            {/* Header */}
             <div className="flex items-center gap-3 mb-6">
               <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-xl bg-card/80 flex items-center justify-center hover:bg-card transition-colors">
                 <ArrowLeft className="w-5 h-5" />
@@ -77,12 +81,10 @@ const Checkout = () => {
                 <button
                   onClick={() => setHostelOpen(!hostelOpen)}
                   className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl border transition-all text-sm text-left ${
-                    selectedHostel
-                      ? 'bg-primary/5 border-primary/30'
-                      : 'bg-muted/50 border-border/50'
+                    selectedHostelId ? 'bg-primary/5 border-primary/30' : 'bg-muted/50 border-border/50'
                   }`}
                 >
-                  <span className={selectedHostel ? 'font-medium' : 'text-muted-foreground'}>
+                  <span className={selectedHostelId ? 'font-medium' : 'text-muted-foreground'}>
                     {hostel ? hostel.name : 'Select your hostel'}
                   </span>
                   <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${hostelOpen ? 'rotate-180' : ''}`} />
@@ -99,13 +101,13 @@ const Checkout = () => {
                       {hostels.map(h => (
                         <button
                           key={h.id}
-                          onClick={() => { setSelectedHostel(h.id); setHostelOpen(false); }}
+                          onClick={() => { setSelectedHostelId(h.id); setHostelOpen(false); }}
                           className={`w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-muted/50 transition-colors text-left ${
-                            selectedHostel === h.id ? 'bg-primary/5 text-primary font-medium' : ''
+                            selectedHostelId === h.id ? 'bg-primary/5 text-primary font-medium' : ''
                           }`}
                         >
                           <span>{h.name}</span>
-                          <span className="text-xs text-muted-foreground">₦{h.deliveryFee} · +{h.estimatedExtraTime}min</span>
+                          <span className="text-xs text-muted-foreground">₦{h.delivery_fee} · +{h.extra_delivery_time}min</span>
                         </button>
                       ))}
                     </motion.div>
@@ -119,8 +121,8 @@ const Checkout = () => {
                   animate={{ opacity: 1, height: 'auto' }}
                   className="mt-3 flex items-center gap-4 text-xs text-muted-foreground"
                 >
-                  <span>Delivery fee: <strong className="text-foreground">₦{hostel.deliveryFee}</strong></span>
-                  <span>Extra time: <strong className="text-foreground">+{hostel.estimatedExtraTime} min</strong></span>
+                  <span>Delivery fee: <strong className="text-foreground">₦{hostel.delivery_fee}</strong></span>
+                  <span>Extra time: <strong className="text-foreground">+{hostel.extra_delivery_time} min</strong></span>
                 </motion.div>
               )}
             </div>
@@ -131,7 +133,6 @@ const Checkout = () => {
                 <CreditCard className="w-5 h-5 text-primary" />
                 <h2 className="font-display font-semibold">Payment Method</h2>
               </div>
-
               <div className="space-y-2">
                 {paymentMethods.map(pm => (
                   <button
@@ -153,11 +154,7 @@ const Checkout = () => {
                       <div className="text-xs text-muted-foreground">{pm.desc}</div>
                     </div>
                     {paymentMethod === pm.id && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="w-6 h-6 rounded-full gradient-bg flex items-center justify-center"
-                      >
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-6 h-6 rounded-full gradient-bg flex items-center justify-center">
                         <Check className="w-3.5 h-3.5 text-primary-foreground" />
                       </motion.div>
                     )}
@@ -191,22 +188,15 @@ const Checkout = () => {
               </div>
             </div>
 
-            {/* Place Order */}
             <button
               onClick={handlePlaceOrder}
               disabled={processing || showSuccess}
               className="w-full py-4 rounded-2xl gradient-bg text-primary-foreground font-semibold text-lg btn-glow hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {processing ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Processing Payment...
-                </>
+                <><Loader2 className="w-5 h-5 animate-spin" /> Processing Payment...</>
               ) : showSuccess ? (
-                <>
-                  <Check className="w-5 h-5" />
-                  Order Placed!
-                </>
+                <><Check className="w-5 h-5" /> Order Placed!</>
               ) : (
                 `Pay ₦${total.toLocaleString()}`
               )}
@@ -217,22 +207,13 @@ const Checkout = () => {
         {/* Success Overlay */}
         <AnimatePresence>
           {showSuccess && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 backdrop-blur-sm"
             >
-              <motion.div
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', damping: 15 }}
+              <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', damping: 15 }}
                 className="glass-card p-8 text-center max-w-sm mx-4"
               >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: 'spring' }}
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring' }}
                   className="w-20 h-20 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4"
                 >
                   <Check className="w-10 h-10 text-primary-foreground" />

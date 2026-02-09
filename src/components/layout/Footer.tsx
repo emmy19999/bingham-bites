@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { UtensilsCrossed, Instagram, Twitter, Phone, Mail } from 'lucide-react';
+import { UtensilsCrossed, Instagram, Twitter, Phone, Mail, ShieldCheck } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -19,6 +19,10 @@ const Footer = () => {
               The fastest food delivery platform built exclusively for Bingham University students.
               Order from your favorite campus cafeterias.
             </p>
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
+              <ShieldCheck className="w-3 h-3" />
+              Security-first system built by a cybersecurity student
+            </div>
           </div>
 
           {/* Quick Links */}
@@ -28,6 +32,7 @@ const Footer = () => {
               <Link to="/home" className="text-sm text-muted-foreground hover:text-primary transition-colors">Explore Cafeterias</Link>
               <Link to="/cart" className="text-sm text-muted-foreground hover:text-primary transition-colors">My Cart</Link>
               <Link to="/orders" className="text-sm text-muted-foreground hover:text-primary transition-colors">Order History</Link>
+              <Link to="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">About BHU-Quick-Food</Link>
               <Link to="/profile" className="text-sm text-muted-foreground hover:text-primary transition-colors">My Profile</Link>
             </div>
           </div>
@@ -54,12 +59,15 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-border/50 mt-8 pt-8 text-center">
+        <div className="border-t border-border/50 mt-8 pt-8 text-center space-y-1">
           <p className="text-sm text-muted-foreground">
-            © 2026 BHU-Quick-Food. Created for Bingham University Students Only.
+            © 2026 BHU-Quick-Food
           </p>
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            Bingham University, Karu, Nasarawa State, Nigeria
+          <p className="text-xs text-muted-foreground/60">
+            Created for Bingham University Students Only
+          </p>
+          <p className="text-xs text-muted-foreground/50">
+            Built with ❤️ and a security-first mindset by emmy-brain-codes 🛰️
           </p>
         </div>
       </div>
