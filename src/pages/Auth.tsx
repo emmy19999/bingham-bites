@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, UtensilsCrossed, ArrowRight, Loader2, ShieldCheck, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+
+const ALLOWED_DOMAIN = 'binghamuni.edu.ng';
+
+const passwordChecks = (password: string) => [
+  { label: 'At least 8 characters', met: password.length >= 8 },
+  { label: 'Uppercase letter', met: /[A-Z]/.test(password) },
+  { label: 'Number', met: /[0-9]/.test(password) },
+  { label: 'Special character', met: /[^A-Za-z0-9]/.test(password) },
+];
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,21 +22,39 @@ const Auth = () => {
   const { login, signup } = useAuth();
   const navigate = useNavigate();
 
+  const emailDomain = form.email.split('@')[1]?.toLowerCase() || '';
+  const isValidDomain = !form.email.includes('@') || emailDomain === ALLOWED_DOMAIN;
+  const checks = passwordChecks(form.password);
+  const allChecksMet = checks.every(c => c.met);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isLogin && !isValidDomain) {
+      toast.error(`Only @${ALLOWED_DOMAIN} emails are allowed.`);
+      return;
+    }
+    if (!isLogin && !allChecksMet) {
+      toast.error('Please meet all password requirements.');
+      return;
+    }
+
     setLoading(true);
     try {
-      let success: boolean;
       if (isLogin) {
-        success = await login(form.email, form.password);
+        const result = await login(form.email, form.password);
+        if (result.success) {
+          toast.success('Welcome back! 🎉');
+          navigate('/home');
+        } else {
+          toast.error(result.error || 'Invalid credentials');
+        }
       } else {
-        success = await signup(form.name, form.email, form.password, form.studentId);
-      }
-      if (success) {
-        toast.success(isLogin ? 'Welcome back! 🎉' : 'Account created! 🎉');
-        navigate('/home');
-      } else {
-        toast.error('Invalid credentials');
+        const result = await signup(form.name, form.email, form.password, form.studentId);
+        if (result.success) {
+          toast.success('Account created! Check your email to verify your account. 📧');
+        } else {
+          toast.error(result.error || 'Signup failed');
+        }
       }
     } catch {
       toast.error('Something went wrong');
@@ -60,6 +87,14 @@ const Auth = () => {
             </p>
           </div>
 
+          {/* Restricted access banner */}
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/5 border border-primary/20 mb-6">
+            <ShieldCheck className="w-4 h-4 text-primary flex-shrink-0" />
+            <p className="text-xs text-muted-foreground">
+              Access restricted to verified Bingham University students only.
+            </p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <motion.div
@@ -86,9 +121,23 @@ const Auth = () => {
                 required
                 value={form.email}
                 onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
-                placeholder="student@binghamuni.edu.ng"
+                className={`w-full px-4 py-3 rounded-xl bg-muted/50 border outline-none transition-all text-sm ${
+                  form.email.includes('@') && !isValidDomain
+                    ? 'border-destructive focus:border-destructive focus:ring-2 focus:ring-destructive/20'
+                    : 'border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20'
+                }`}
+                placeholder={`student@${ALLOWED_DOMAIN}`}
               />
+              {form.email.includes('@') && !isValidDomain && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-1 text-xs text-destructive mt-1.5"
+                >
+                  <AlertTriangle className="w-3 h-3" />
+                  Only @{ALLOWED_DOMAIN} emails are accepted
+                </motion.p>
+              )}
             </div>
 
             <div>
@@ -100,8 +149,8 @@ const Auth = () => {
                   value={form.password}
                   onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
                   className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm pr-10"
-                  placeholder="Min. 6 characters"
-                  minLength={6}
+                  placeholder="Strong password"
+                  minLength={8}
                 />
                 <button
                   type="button"
@@ -111,6 +160,28 @@ const Auth = () => {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+
+              {/* Password strength indicators */}
+              {!isLogin && form.password.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mt-2 space-y-1"
+                >
+                  {checks.map(check => (
+                    <div key={check.label} className="flex items-center gap-1.5">
+                      {check.met ? (
+                        <CheckCircle2 className="w-3 h-3 text-success" />
+                      ) : (
+                        <XCircle className="w-3 h-3 text-muted-foreground" />
+                      )}
+                      <span className={`text-xs ${check.met ? 'text-success' : 'text-muted-foreground'}`}>
+                        {check.label}
+                      </span>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
             </div>
 
             {!isLogin && (
@@ -131,7 +202,7 @@ const Auth = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (!isLogin && (!isValidDomain || !allChecksMet))}
               className="w-full py-3.5 rounded-xl gradient-bg text-primary-foreground font-semibold btn-glow hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {loading ? (
@@ -154,6 +225,14 @@ const Auth = () => {
               >
                 {isLogin ? 'Sign Up' : 'Sign In'}
               </button>
+            </p>
+          </div>
+
+          {/* Security badge */}
+          <div className="mt-6 pt-4 border-t border-border/30 text-center">
+            <p className="text-[10px] text-muted-foreground/60 flex items-center justify-center gap-1">
+              <ShieldCheck className="w-3 h-3" />
+              Security-first system built by a cybersecurity student
             </p>
           </div>
         </div>

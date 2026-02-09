@@ -1,54 +1,55 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, SlidersHorizontal } from 'lucide-react';
-import { cafeterias, foodCategories } from '@/data/cafeterias';
+import { Search } from 'lucide-react';
+import { useCafeterias } from '@/hooks/use-cafeterias';
 import CafeteriaCard from '@/components/home/CafeteriaCard';
 import { SkeletonCard, PageTransition } from '@/components/ui/Skeletons';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/contexts/AuthContext';
 
+const foodCategories = [
+  { id: 'all', name: 'All', emoji: '🍽️' },
+  { id: 'rice', name: 'Rice', emoji: '🍚' },
+  { id: 'swallow', name: 'Swallow', emoji: '🥘' },
+  { id: 'pasta', name: 'Pasta', emoji: '🍝' },
+  { id: 'grills', name: 'Grills', emoji: '🥩' },
+  { id: 'snacks', name: 'Snacks', emoji: '🥧' },
+  { id: 'drinks', name: 'Drinks', emoji: '🥤' },
+];
+
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  const { data: cafeterias = [], isLoading: loading } = useCafeterias();
+  const { profile } = useAuth();
 
   const filteredCafeterias = cafeterias.filter(c => {
     const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesCategory = selectedCategory === 'all' ||
-      c.menu.some(m => m.category.toLowerCase().includes(selectedCategory.toLowerCase()));
-    return matchesSearch && matchesCategory;
+      (c.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
   });
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col pb-16 md:pb-0">
       <Header />
       <PageTransition>
         <main className="flex-1 animated-gradient-bg">
-          {/* Welcome & Search */}
           <section className="pt-6 pb-4">
             <div className="container mx-auto px-4">
-              {user && (
+              {profile && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="mb-4"
                 >
                   <h1 className="font-display text-2xl sm:text-3xl font-bold">
-                    Hey, {user.name.split(' ')[0]} 👋
+                    Hey, {profile.full_name.split(' ')[0]} 👋
                   </h1>
                   <p className="text-muted-foreground text-sm mt-1">What are you craving today?</p>
                 </motion.div>
               )}
 
-              {/* Search Bar */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -60,12 +61,11 @@ const Home = () => {
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search cafeterias, foods..."
+                  placeholder="Search cafeterias..."
                   className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm shadow-card"
                 />
               </motion.div>
 
-              {/* Categories */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -90,13 +90,10 @@ const Home = () => {
             </div>
           </section>
 
-          {/* Cafeteria Grid */}
           <section className="pb-12">
             <div className="container mx-auto px-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-display font-semibold text-lg">
-                  {selectedCategory === 'all' ? 'All Cafeterias' : `${foodCategories.find(c => c.id === selectedCategory)?.name || ''} Spots`}
-                </h2>
+                <h2 className="font-display font-semibold text-lg">All Cafeterias</h2>
                 <span className="text-sm text-muted-foreground">{filteredCafeterias.length} available</span>
               </div>
 
@@ -113,14 +110,10 @@ const Home = () => {
               )}
 
               {!loading && filteredCafeterias.length === 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-16"
-                >
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
                   <span className="text-5xl mb-4 block">🔍</span>
                   <h3 className="font-display font-semibold text-xl mb-2">No results found</h3>
-                  <p className="text-muted-foreground text-sm">Try a different search or category</p>
+                  <p className="text-muted-foreground text-sm">Try a different search</p>
                 </motion.div>
               )}
             </div>
