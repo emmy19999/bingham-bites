@@ -19,6 +19,11 @@ import Checkout from "./pages/Checkout";
 import OrderTracking from "./pages/OrderTracking";
 import Profile from "./pages/Profile";
 import Orders from "./pages/Orders";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import ManageCafeterias from "./pages/admin/ManageCafeterias";
+import ManageHostels from "./pages/admin/ManageHostels";
+import ManageOrders from "./pages/admin/ManageOrders";
+import ManageUsers from "./pages/admin/ManageUsers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +49,11 @@ const App = () => (
                   <Route path="/tracking/:id" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
                   <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/admin" element={<ProtectedRoute requiredRole="cafeteria_admin"><AdminDashboard /></ProtectedRoute>} />
+                  <Route path="/admin/cafeterias" element={<ProtectedRoute requiredRole="super_admin"><ManageCafeterias /></ProtectedRoute>} />
+                  <Route path="/admin/hostels" element={<ProtectedRoute requiredRole="super_admin"><ManageHostels /></ProtectedRoute>} />
+                  <Route path="/admin/orders" element={<ProtectedRoute requiredRole="cafeteria_admin"><ManageOrders /></ProtectedRoute>} />
+                  <Route path="/admin/users" element={<ProtectedRoute requiredRole="super_admin"><ManageUsers /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </AnimatePresence>

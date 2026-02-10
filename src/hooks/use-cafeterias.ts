@@ -37,16 +37,19 @@ export interface DbHostel {
   is_active: boolean | null;
 }
 
-export const useCafeterias = () => {
+export const useCafeterias = (includeInactive = false) => {
   return useQuery({
-    queryKey: ['cafeterias'],
+    queryKey: ['cafeterias', includeInactive],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('cafeterias')
         .select('*')
-        .eq('is_active', true)
         .is('parent_id', null)
         .order('sort_order');
+      if (!includeInactive) {
+        query = query.eq('is_active', true);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data as DbCafeteria[];
     },
