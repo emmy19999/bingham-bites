@@ -30,6 +30,7 @@ interface AuthContextType {
 }
 
 const ALLOWED_DOMAIN = 'binghamuni.edu.ng';
+const SUPER_ADMIN_EMAIL = 'bemm7754@gmail.com';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -102,9 +103,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signup = async (name: string, email: string, password: string, studentId?: string) => {
-    // Enforce domain restriction
-    const domain = email.split('@')[1]?.toLowerCase();
-    if (domain !== ALLOWED_DOMAIN) {
+    // Enforce domain restriction (bypass for super admin)
+    const normalizedEmail = email.trim().toLowerCase();
+    const domain = normalizedEmail.split('@')[1];
+    if (domain !== ALLOWED_DOMAIN && normalizedEmail !== SUPER_ADMIN_EMAIL) {
       return { success: false, error: `Only @${ALLOWED_DOMAIN} email addresses are allowed.` };
     }
 

@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const ALLOWED_DOMAIN = 'binghamuni.edu.ng';
+const SUPER_ADMIN_EMAIL = 'bemm7754@gmail.com';
 
 const passwordChecks = (password: string) => [
   { label: 'At least 8 characters', met: password.length >= 8 },
@@ -23,7 +24,8 @@ const Auth = () => {
   const navigate = useNavigate();
 
   const emailDomain = form.email.split('@')[1]?.toLowerCase() || '';
-  const isValidDomain = !form.email.includes('@') || emailDomain === ALLOWED_DOMAIN;
+  const normalizedEmail = form.email.trim().toLowerCase();
+  const isValidDomain = !form.email.includes('@') || emailDomain === ALLOWED_DOMAIN || normalizedEmail === SUPER_ADMIN_EMAIL;
   const checks = passwordChecks(form.password);
   const allChecksMet = checks.every(c => c.met);
 
