@@ -6,6 +6,7 @@ import CafeteriaCard from '@/components/home/CafeteriaCard';
 import { SkeletonCard, PageTransition } from '@/components/ui/Skeletons';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import AnnouncementBanner from '@/components/announcements/AnnouncementBanner';
 import { useAuth } from '@/contexts/AuthContext';
 
 const foodCategories = [
@@ -37,6 +38,7 @@ const Home = () => {
         <main className="flex-1 animated-gradient-bg">
           <section className="pt-6 pb-4">
             <div className="container mx-auto px-4">
+              <AnnouncementBanner />
               {profile && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}

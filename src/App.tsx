@@ -9,8 +9,12 @@ import { OrderProvider } from "@/contexts/OrderContext";
 import { AnimatePresence } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import BottomNav from "@/components/layout/BottomNav";
+import FluidBackground from "@/components/animations/FluidBackground";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import VerificationSuccess from "./pages/VerificationSuccess";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import CafeteriaDetail from "./pages/CafeteriaDetail";
@@ -36,11 +40,15 @@ const App = () => (
           <OrderProvider>
             <Toaster />
             <Sonner />
+            <FluidBackground />
             <BrowserRouter>
               <AnimatePresence mode="wait">
                 <Routes>
                   <Route path="/" element={<Landing />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/verified" element={<VerificationSuccess />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
                   <Route path="/cafeteria/:id" element={<ProtectedRoute><CafeteriaDetail /></ProtectedRoute>} />

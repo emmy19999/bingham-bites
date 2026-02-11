@@ -7,6 +7,7 @@ import { useOrders } from '@/contexts/OrderContext';
 import { useHostels } from '@/hooks/use-cafeterias';
 import Header from '@/components/layout/Header';
 import { PageTransition } from '@/components/ui/Skeletons';
+import ThankYouScreen from '@/components/animations/ThankYouScreen';
 import { toast } from 'sonner';
 
 const Checkout = () => {
@@ -18,6 +19,7 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [processing, setProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successOrderId, setSuccessOrderId] = useState('');
   const [hostelOpen, setHostelOpen] = useState(false);
 
   const hostel = hostels.find(h => h.id === selectedHostelId);
@@ -41,11 +43,9 @@ const Checkout = () => {
 
     if (order) {
       setProcessing(false);
+      setSuccessOrderId(order.id);
       setShowSuccess(true);
-      setTimeout(() => {
-        clearCart();
-        navigate(`/tracking/${order.id}`);
-      }, 2500);
+      clearCart();
     } else {
       setProcessing(false);
       toast.error('Failed to place order. Please try again.');
@@ -204,26 +204,12 @@ const Checkout = () => {
           </div>
         </main>
 
-        {/* Success Overlay */}
-        <AnimatePresence>
-          {showSuccess && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 backdrop-blur-sm"
-            >
-              <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', damping: 15 }}
-                className="glass-card p-8 text-center max-w-sm mx-4"
-              >
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring' }}
-                  className="w-20 h-20 rounded-full gradient-bg flex items-center justify-center mx-auto mb-4"
-                >
-                  <Check className="w-10 h-10 text-primary-foreground" />
-                </motion.div>
-                <h2 className="font-display text-2xl font-bold mb-2">Order Confirmed! 🎉</h2>
-                <p className="text-sm text-muted-foreground">Your food is being prepared. Redirecting to tracking...</p>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <ThankYouScreen
+          show={showSuccess}
+          onDismiss={() => setShowSuccess(false)}
+          trackingId={successOrderId}
+          variant="order"
+        />
       </PageTransition>
     </div>
   );
