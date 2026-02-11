@@ -61,13 +61,10 @@ const Footer = () => {
 
         <div className="border-t border-border/50 mt-8 pt-8 text-center space-y-1">
           <p className="text-sm text-muted-foreground">
-            © 2026 BHU-Quick-Food
+            Created by emmy-brain-codes 🛰️
           </p>
           <p className="text-xs text-muted-foreground/60">
-            Created for Bingham University Students Only
-          </p>
-          <p className="text-xs text-muted-foreground/50">
-            Built with ❤️ and a security-first mindset by emmy-brain-codes 🛰️
+            © 2026 – For Bingham University Students Only
           </p>
         </div>
       </div>
